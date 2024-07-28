@@ -22,6 +22,7 @@ var mudarFase = 0;
 //tela 2-instruções
 //tela 3-créditos
 //tela 4-lembre-se
+//tela 6 - tela de erro
 
 function preload() {
   personagem = loadImage("Dino.png");
@@ -119,9 +120,7 @@ function draw() {
     circle(xR2, yR2, 20);
     
     // Colisão
-    if (dist(xP, yP, xR, yR) < r + rP || dist(xP, yP, xR1, yR1) < r1 + rP || dist(xP, yP, xR2, yR2) < r2 + rP) {
-      tela = 6;
-    }
+    checkCollision(); // Chamada da função que verifica colisões
   } else if (tela == 2) {
     textSize(18);
     fill(250, 250, 250);
@@ -175,6 +174,8 @@ function mouseClicked() {
       pontos = 0; // Zera a pontuação ao clicar em "Jogar"
       nivel = 1;  // Reinicia o nível ao clicar em "Jogar"
       vidas = 5;  // Reinicia as vidas ao clicar em "Jogar"
+      xP = 250;   // Reinicia a posição do personagem ao clicar em "Jogar"
+      yP = 80;    // Reinicia a posição do personagem ao clicar em "Jogar"
     } else if (mouseX > 150 && mouseX < 250 && mouseY > 130 && mouseY < 160) {
       console.log("clicou no lembre-se");
       tela = 2;
@@ -196,33 +197,42 @@ function mouseClicked() {
     if (mouseX > 285 && mouseX < 365 && mouseY > 250 && mouseY < 275) {
       console.log("clicou em continue");
       tela = 1;
+      xP = 250; // Reinicia a posição do personagem ao clicar em "Continue"
+      yP = 80;  // Reinicia a posição do personagem ao clicar em "Continue"
     }
   }
-  
-  // Verifica se clicou em alguma alternativa de resposta
-  if (tela == 1) {
-    for (let i = 0; i < respostas[nivel - 1].length; i++) {
-      if (mouseX > 50 + (i * 120) && mouseX < 150 + (i * 120) && mouseY > 140 && mouseY < 170) {
-        if (respostas[nivel - 1][i] == "Descritiva" && nivel == 1 ||
-            respostas[nivel - 1][i] == "Narrativa" && nivel == 2 ||
-            respostas[nivel - 1][i] == "Explicativa" && nivel == 3) {
-          pontos += 100;
-          nivel++;
-          if (nivel > 3) {
-            nivel = 1;
-            tela = 0;
-          }
+}
+
+function checkCollision() {
+  let alternativas = [
+    {x: xR, y: yR, resposta: respostas[nivel - 1][0]},
+    {x: xR1, y: yR1, resposta: respostas[nivel - 1][1]},
+    {x: xR2, y: yR2, resposta: respostas[nivel - 1][2]}
+  ];
+
+  for (let alternativa of alternativas) {
+    if (dist(xP, yP, alternativa.x, alternativa.y) < r + rP) {
+      if ((alternativa.resposta == "Descritiva" && nivel == 1) ||
+          (alternativa.resposta == "Narrativa" && nivel == 2) ||
+          (alternativa.resposta == "Explicativa" && nivel == 3)) {
+        pontos += 100;
+        nivel++;
+        if (nivel > 3) {
+          nivel = 1;
+          tela = 0;
+        }
+      } else {
+        vidas--; // Decrementa uma vida se a resposta estiver errada
+        if (vidas <= 0) {
+          tela = 6; // Se as vidas acabarem, vai para a tela de fim de jogo
+          nivel = 1; // Reinicia o nível
+          vidas = 5; // Reinicia as vidas
         } else {
-          vidas--; // Decrementa uma vida se a resposta estiver errada
-          if (vidas <= 0) {
-            tela = 6; // Se as vidas acabarem, vai para a tela de fim de jogo
-            nivel = 1; // Reinicia o nível
-            vidas = 5; // Reinicia as vidas
-          } else {
-            tela = 6;
-          }
+          tela = 6;
         }
       }
+      xP = 250; // Reinicia a posição do personagem após colisão
+      yP = 80;  // Reinicia a posição do personagem após colisão
     }
   }
 }
