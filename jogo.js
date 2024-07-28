@@ -14,7 +14,9 @@ var nivel = 1;
 var vidas = 5; // Contador de vidas
 var barreiraPontos = 300;
 var perguntas = [];
-var respostas = [];
+var respostasCorretas = [];
+var alternativas = ["Descritiva", "Narrativa", "Explicativa"];
+var alternativasEmbaralhadas = [];
 var mudarFase = 0;
 
 //tela 0-menu
@@ -41,9 +43,11 @@ function setup() {
   perguntas[1] = "2- Descreva uma sequência narrativa onde os eventos são contados.";
   perguntas[2] = "3- Explique um conceito ou fenômeno de maneira detalhada.";
   
-  respostas[0] = ["Descritiva", "Narrativa", "Explicativa"];
-  respostas[1] = ["Narrativa", "Descritiva", "Argumentativa"];
-  respostas[2] = ["Explicativa", "Injuntiva", "Narrativa"];
+  respostasCorretas[0] = "Descritiva";
+  respostasCorretas[1] = "Narrativa";
+  respostasCorretas[2] = "Explicativa";
+  
+  embaralharAlternativas();
 }
 
 function draw() {
@@ -80,12 +84,12 @@ function draw() {
     text(perguntas[nivel - 1], 30, 60);
     
     // Adicionando alternativas de resposta
-    for (let i = 0; i < respostas[nivel - 1].length; i++) {
+    for (let i = 0; i < alternativasEmbaralhadas.length; i++) {
       fill(160, 82, 45);
       rect(50 + (i * 120), 140, 100, 30, 15);
       textSize(15);
       fill(250, 250, 250);
-      text(respostas[nivel - 1][i], 50 + (i * 120) + 15, 160);
+      text(alternativasEmbaralhadas[i], 50 + (i * 120) + 15, 160);
     }
 
     fill(160, 82, 45);
@@ -176,6 +180,7 @@ function mouseClicked() {
       vidas = 5;  // Reinicia as vidas ao clicar em "Jogar"
       xP = 250;   // Reinicia a posição do personagem ao clicar em "Jogar"
       yP = 80;    // Reinicia a posição do personagem ao clicar em "Jogar"
+      embaralharAlternativas(); // Embaralha as alternativas ao clicar em "Jogar"
     } else if (mouseX > 150 && mouseX < 250 && mouseY > 130 && mouseY < 160) {
       console.log("clicou no lembre-se");
       tela = 2;
@@ -183,7 +188,7 @@ function mouseClicked() {
       console.log("clicou nas instruções");
       tela = 3;
     } else if (mouseX > 150 && mouseX < 250 && mouseY > 210 && mouseY < 240) {
-      console.log("clicou nas instruções");
+      console.log("clicou nos créditos");
       tela = 4;
     }
   }
@@ -205,9 +210,9 @@ function mouseClicked() {
 
 function checkCollision() {
   let alternativas = [
-    {x: xR, y: yR, resposta: respostas[nivel - 1][0]},
-    {x: xR1, y: yR1, resposta: respostas[nivel - 1][1]},
-    {x: xR2, y: yR2, resposta: respostas[nivel - 1][2]}
+    {x: xR, y: yR, resposta: alternativasEmbaralhadas[0]},
+    {x: xR1, y: yR1, resposta: alternativasEmbaralhadas[1]},
+    {x: xR2, y: yR2, resposta: alternativasEmbaralhadas[2]}
   ];
 
   for (let alternativa of alternativas) {
@@ -221,6 +226,7 @@ function checkCollision() {
           nivel = 1;
           tela = 0;
         }
+        embaralharAlternativas(); // Embaralha as alternativas ao passar de nível
       } else {
         vidas--; // Decrementa uma vida se a resposta estiver errada
         if (vidas <= 0) {
@@ -235,4 +241,13 @@ function checkCollision() {
       yP = 80;  // Reinicia a posição do personagem após colisão
     }
   }
+}
+
+function embaralharAlternativas() {
+  let alternativasCopia = alternativas.slice(); // Copia as alternativas fixas
+  for (let i = alternativasCopia.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [alternativasCopia[i], alternativasCopia[j]] = [alternativasCopia[j], alternativasCopia[i]];
+  }
+  alternativasEmbaralhadas = alternativasCopia; // Atualiza a lista de alternativas embaralhadas
 }
